@@ -7,6 +7,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import science.larry.dmojcraft.commands.AuthCommand;
 import science.larry.dmojcraft.commands.BookCommand;
 import science.larry.dmojcraft.commands.SubmitCommand;
+import science.larry.dmojcraft.commands.ReadCommand;
 import science.larry.dmojcraft.util.LogSuppressor;
 import science.larry.dmojcraft.util.SessionCache;
 
@@ -42,6 +43,7 @@ public final class DMOJCraft extends JavaPlugin {
         logger = getLogger();
         loadLogSuppressor();
 
+        Objects.requireNonNull(this.getCommand("read")).setExecutor(new ReadCommand());
         Objects.requireNonNull(this.getCommand("auth")).setExecutor(new AuthCommand());
         Objects.requireNonNull(this.getCommand("submit")).setExecutor(new SubmitCommand());
         Objects.requireNonNull(this.getCommand("book")).setExecutor(new BookCommand());

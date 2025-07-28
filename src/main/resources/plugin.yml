@@ -3,6 +3,10 @@ version: ${project.version}
 main: science.larry.dmojcraft.DMOJCraft
 api-version: 1.15
 commands:
+  read:
+    description: Reads a problem from DMOJ and gives you a book and quill with the problem statement.
+    usage: /read [PROBLEM CODE]
+    aliases: [problem, p]
   auth:
     description: Authenticates to your DMOJ account
     usage: /auth [API TOKEN]
