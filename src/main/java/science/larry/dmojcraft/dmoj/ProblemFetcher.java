@@ -8,19 +8,22 @@ import org.bukkit.inventory.meta.BookMeta;
 import org.jsoup.Jsoup;
 import org.jsoup.Connection.Response;
 import org.jsoup.nodes.Document;
-import org.jsoup.safety.Safelist;
+import org.jsoup.nodes.Element;
+
+import io.github.furstenheim.CopyDown;
+
 import org.jsoup.HttpStatusException;
 
 public class ProblemFetcher {
     private final static String BASE_URL = "https://dmoj.ca";
 
-    private static String br2nl(Response res) throws IOException{
+    private static String processHtml(Response res) throws IOException {
+        CopyDown converter = new CopyDown();
+
         Document document = res.parse();
-        document.outputSettings(new Document.OutputSettings().prettyPrint(false));//makes html() preserve linebreaks and spacing
-        document.select("br").append("\\n");
-        document.select("p").prepend("\\n\\n");
-        String s = document.html().replaceAll("\\\\n", "\n");
-        return Jsoup.clean(s, "", Safelist.none(), new Document.OutputSettings().prettyPrint(false));
+        document.getElementById("comments").remove();
+        Element content = document.selectFirst("div#content-body");
+        return converter.convert(content.html());
     }
 
     private static String getProblemContent(String problemURL) throws IOException, HttpStatusException {
@@ -28,7 +31,7 @@ public class ProblemFetcher {
         dmojProblemResponse = Jsoup.connect(problemURL)
                 .followRedirects(true)
                 .execute();
-        return br2nl(dmojProblemResponse);
+        return processHtml(dmojProblemResponse);
     }
 
     public static ItemStack readProblem(String problem) throws IOException, HttpStatusException {
