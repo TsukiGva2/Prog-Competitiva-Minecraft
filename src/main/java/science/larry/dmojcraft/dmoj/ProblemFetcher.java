@@ -9,10 +9,10 @@ import org.jsoup.Jsoup;
 import org.jsoup.Connection.Response;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-
 import io.github.furstenheim.CopyDown;
-
 import org.jsoup.HttpStatusException;
+import org.jsoup.safety.Safelist;
+import org.jsoup.select.Elements;
 
 public class ProblemFetcher {
     private final static String BASE_URL = "https://dmoj.ca";
@@ -21,9 +21,30 @@ public class ProblemFetcher {
         CopyDown converter = new CopyDown();
 
         Document document = res.parse();
+        
         document.getElementById("comments").remove();
-        Element content = document.selectFirst("div#content-body");
-        return converter.convert(content.html());
+
+        Elements links = document.select("a");
+        for (Element link : links) link.replaceWith(new Element("p").text(link.text()));
+
+        Element content = document.selectFirst("div#content-left");
+        return converter.convert(
+            Jsoup.clean(
+                content.html(),
+                Safelist.basic()
+                    .addTags(
+                        "h1", "h2", "h3", "h4", "h5", "h6",
+                        "p", "ul", "ol", "li", "strong", "em", "code", "pre"
+                    )
+            )
+        ).replaceAll("~","")
+         .replaceAll("\\\\\\\\times", "*") // those are \\ for like escaped latex shit
+         .replaceAll("\\\\\\\\frac", "/")
+         .replaceAll("\\\\\\\\ne", "!=")
+         .replaceAll("\\\\\\\\ge", ">=")
+         .replaceAll("\\\\\\\\le", "<=")
+         .replaceAll("\\\\\\\\sqrt", "sqrt_")
+         .replaceAll("\\\\\\\\,", "_");
     }
 
     private static String getProblemContent(String problemURL) throws IOException, HttpStatusException {
@@ -45,9 +66,9 @@ public class ProblemFetcher {
 
         String content = getProblemContent(problemURL);
 
-        for (int i = 0, j = 0; i < content.length() && j < 100; i += 255, j++)
+        for (int i = 0, j = 0; i < content.length() && j < 100; i += 200, j++)
         {
-            String page = content.substring(i, Math.min(i + 255, content.length()));
+            String page = content.substring(i, Math.min(i + 200, content.length()));
             bookMeta.addPage(page);
         }
 
